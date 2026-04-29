@@ -1,0 +1,59 @@
+---
+title: "Mental Health"
+author: "Maya Arnott"
+date: "May 2nd, 2026"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(sf)
+library(viridis)
+
+```
+
+# Load data.
+```{r}
+load("data/county_health_rankings_data.RData") 
+
+load("data/states_boundaries.RData")
+```
+
+# Part 1 - Mapping Mental Health in the United States
+
+## Q1: Distribution (Histogram)
+```{r}
+
+mental_health_dist <- ggplot(county_data, aes(x = poor_mental_days)) + 
+  geom_histogram(bins = 30, fill = "darkblue", color = "white") +
+  labs(title = "Distribution of Poor Mental Health Days",
+       x = "Poor Mental Health Days",
+       y = "Count")
+
+IQR(county_data$poor_mental_days, na.rm = TRUE)
+
+# See Q1, Median, and Q3
+quantile(county_data$poor_mental_days, probs = c(0.25, 0.5, 0.75), na.rm = TRUE)
+
+```
+
+Surpringly, the distribution seems to almost follow a normal distribution, with the middle 50% of the data falling between 5.25 and 6.03 average days of reported poor mental health per month. The typical mental health burden does not have a large variance, and an average of 5-6 days per month is about 18-20% of days per month, which is high.
+
+## Q2: Choropleth Map
+
+```{r}
+chloropleth_map <- 
+  ggplot() + 
+  geom_sf(data = county_data, aes(fill = poor_mental_days), color = NA) +
+  geom_sf(data = states_sf, fill = NA, color = "grey", size = 0.5) +
+  scale_fill_viridis_c(option = "viridis", na.value = "grey50") +
+  labs(title = "Poor Mental Health Days by County",
+       fill = "Avg Days") +
+  theme_minimal()
+  
+```
+
+# Part 2 - Spatial Cluster Analysis
+
+## Q3: Global Moran's I
